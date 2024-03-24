@@ -1,0 +1,6 @@
+@중개관리자APIGateWay_HostAddress = http://localhost:5184
+
+GET {{중개관리자APIGateWay_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
