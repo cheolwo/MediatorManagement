@@ -1,8 +1,11 @@
 ﻿using Common.Actor.APIService;
+using Common.DTO;
 using Common.Services.NotificationServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using RabbitMQ.Client;
+using System.Text;
 
 namespace 중개관리자APIGateWay.Controllers
 {
@@ -24,68 +27,61 @@ namespace 중개관리자APIGateWay.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
-        public async Task<IActionResult> UploadEncryptedDocumentAndSessionKey(
-            [FromBody] DocumentUploadModel model)
+        [HttpPost("send")]
+        public async Task<IActionResult> SendDocument([FromBody] CreateEncryptDocumentDto documentDto)
         {
-            try
+            // HMAC 검증
+            // 이 예제에서는 HMAC 검증을 단순화합니다. 실제 구현에서는 송신자의 공개키를 사용하여 HMAC을 검증해야 합니다.
+            // 예를 들어, 송신자의 공개키를 이용하여 세션키를 복호화하고,
+            // 이 세션키를 사용하여 문서에 대한 HMAC을 계산하여 전송된 HMAC과 비교합니다.
+            // HMAC 검증 로직 구현 필요...
+
+            bool isHmacValid = true; // HMAC 검증 결과를 표시하는 부울 변수. 실제 구현에서는 동적으로 계산됩니다.
+
+            if (!isHmacValid)
             {
-                string cacheKey = $"document_{model.RecipientId}_{model.DocumentId}";
-                var cacheData = new
-                {
-                    EncryptedDocument = model.EncryptedDocument,
-                    EncryptedSessionKey = model.EncryptedSessionKey
-                };
-
-                // Redis에 JSON 형태로 데이터 저장
-                string jsonData = JsonConvert.SerializeObject(cacheData);
-                await _cache.SetStringAsync(cacheKey, jsonData, new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12) // 12시간 후 만료
-                });
-
-                // 사용자에게 안전한 알림 전송
-                string notificationMessage = "새로운 문서가 도착했습니다. 안전하게 확인하세요.";
-                await _notificationService.SendNotificationAsync(model.RecipientId, notificationMessage);
-
-                return Ok(new { Message = "Document and session key uploaded successfully and notification sent." });
+                return BadRequest("HMAC 검증 실패.");
             }
-            catch (Exception ex)
+
+            // 수신자의 RabbitMQ 큐에 문서 Enqueue
+            // RabbitMQ 설정 값들은 애플리케이션의 구성 설정에서 가져와야 합니다.
+            var factory = new ConnectionFactory() { HostName = "your_rabbitmq_server" };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
             {
-                // 예외 로깅
-                // Log.Error($"Error uploading document: {ex.Message}");
-                return StatusCode(500, new { Message = "An error occurred while uploading the document." });
+                var queueName = $"documentQueue_{documentDto.RecipientId}";
+                channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+
+                var messageBody = Encoding.UTF8.GetBytes(documentDto.EncryptedDocument);
+                channel.BasicPublish(exchange: "", routingKey: queueName, basicProperties: null, body: messageBody);
             }
+
+            return Ok(new { Message = "문서가 성공적으로 전송되었습니다." });
         }
 
-        /// <summary>
-        /// 수신자가 문서와 세션키를 다운로드
-        /// </summary>
-        /// <param name="recipientId"></param>
-        /// <param name="documentId"></param>
-        /// <returns></returns>
-        [HttpGet("{recipientId}/{documentId}")]
-        public async Task<IActionResult> GetDocumentAndSessionKey(
-            string recipientId, string documentId)
+        [HttpGet("{recipientId}")]
+        public IActionResult RetrieveDocument(string recipientId)
         {
-            // 캐시에서 문서 조회를 위한 키 생성
-            string cacheKey = $"document_{recipientId}+{documentId}";
-
-            // Redis에서 암호화된 문서와 세션키 검색
-            string jsonData = await _cache.GetStringAsync(cacheKey);
-            if (string.IsNullOrEmpty(jsonData))
+            var factory = new ConnectionFactory() { HostName = "your_rabbitmq_server", VirtualHost = "/", Port = 5672 };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
             {
-                return NotFound(new { Message = "Document or session key not found." });
+                var queueName = $"documentQueue_{recipientId}";
+
+                // 큐에서 하나의 메시지를 Dequeue합니다.
+                var result = channel.BasicGet(queue: queueName, autoAck: true);
+
+                if (result == null)
+                {
+                    // 큐에 메시지가 없는 경우
+                    return NotFound("No documents found for the given recipient ID.");
+                }
+                else
+                {
+                    var documentContent = Encoding.UTF8.GetString(result.Body.ToArray());
+                    return Ok(new { Document = documentContent });
+                }
             }
-
-            // JSON 데이터를 객체로 역직렬화
-            var cacheData = JsonConvert.DeserializeObject<dynamic>(jsonData);
-
-            return Ok(new
-            {
-                EncryptedDocument = cacheData.EncryptedDocument,
-                EncryptedSessionKey = cacheData.EncryptedSessionKey
-            });
         }
     }
 
