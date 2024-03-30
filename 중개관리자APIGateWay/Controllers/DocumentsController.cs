@@ -1,9 +1,7 @@
-﻿using Common.Actor.APIService;
-using Common.DTO;
+﻿using Common.DTO;
 using Common.Services.NotificationServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
 

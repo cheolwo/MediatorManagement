@@ -1,4 +1,6 @@
 using Common.Services.NotificationServices;
+using Quartz;
+using 중개관리자APIGateWay.MessageReceiver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,23 @@ builder.Services.AddScoped<INotificationService, EmailNotificationService>(); //
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+
+    var jobKey = new JobKey("RabbitMQMessageReceiverJob");
+    q.AddJob<RabbitMQMessageReceiverJob>(opts => opts.WithIdentity(jobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("RabbitMQMessageReceiverJob-trigger")
+        .StartNow()
+        .WithSimpleSchedule(x => x
+            .WithIntervalInSeconds(10)
+            .RepeatForever()));
+});
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 var app = builder.Build();
 
