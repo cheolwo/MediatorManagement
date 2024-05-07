@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "중개Server", "중개Server.csproj", "{F0EF0F9B-519D-43B1-9DCF-1B0F73CC244C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "재무인사Common", "..\..\Financial-Personnel-Common\재무인사Common\재무인사Common\재무인사Common.csproj", "{4B3B94BF-AD00-49F3-BA59-C2A986D44E40}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F0EF0F9B-519D-43B1-9DCF-1B0F73CC244C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0EF0F9B-519D-43B1-9DCF-1B0F73CC244C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0EF0F9B-519D-43B1-9DCF-1B0F73CC244C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0EF0F9B-519D-43B1-9DCF-1B0F73CC244C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B3B94BF-AD00-49F3-BA59-C2A986D44E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B3B94BF-AD00-49F3-BA59-C2A986D44E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B3B94BF-AD00-49F3-BA59-C2A986D44E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B3B94BF-AD00-49F3-BA59-C2A986D44E40}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3C411D79-693E-4982-BED9-4C3FC178E2F9}
+	EndGlobalSection
+EndGlobal

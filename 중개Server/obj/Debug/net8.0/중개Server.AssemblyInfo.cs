@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("중개Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8b0bf216c72745a078370e6099759b1457f26e5e")]
 [assembly: System.Reflection.AssemblyProductAttribute("중개Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("중개Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
